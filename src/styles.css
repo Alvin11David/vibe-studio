@@ -89,7 +89,42 @@
 }
 
 .dark {
-  /* same as root - app is always dark */
+  /* root is already dark — no overrides needed */
+}
+
+.light {
+  --noir: oklch(0.98 0.005 80);
+  --onyx: oklch(0.94 0.008 80);
+  --gold: oklch(0.62 0.14 78);
+  --gold-soft: oklch(0.72 0.12 82);
+  --gold-deep: oklch(0.5 0.15 70);
+
+  --background: oklch(0.99 0.005 80);
+  --foreground: oklch(0.18 0.01 60);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.01 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.01 60);
+
+  --primary: oklch(0.62 0.14 78);
+  --primary-foreground: oklch(0.99 0.005 80);
+
+  --secondary: oklch(0.94 0.008 80);
+  --secondary-foreground: oklch(0.18 0.01 60);
+
+  --muted: oklch(0.94 0.008 80);
+  --muted-foreground: oklch(0.45 0.015 70);
+
+  --accent: oklch(0.88 0.06 82);
+  --accent-foreground: oklch(0.18 0.01 60);
+
+  --border: oklch(0.55 0.05 75 / 0.25);
+  --input: oklch(0.55 0.05 75 / 0.18);
+  --ring: oklch(0.62 0.14 78);
+
+  --gradient-noir: radial-gradient(ellipse at top, oklch(0.96 0.01 80), oklch(0.99 0.005 80) 70%);
+  --shadow-deep: 0 30px 80px -30px oklch(0.5 0.05 70 / 0.25);
 }
 
 @layer base {

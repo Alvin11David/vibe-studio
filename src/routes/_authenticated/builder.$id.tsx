@@ -168,7 +168,15 @@ function Builder() {
         <section className="relative bg-noir">
           {view === "preview" ? (
             code ? (
-              <iframe srcDoc={code} title="preview" className="h-full w-full border-0 bg-white" sandbox="allow-scripts allow-forms allow-popups allow-same-origin" />
+              <iframe
+                srcDoc={code}
+                title="preview"
+                className="h-full w-full border-0 bg-white"
+                sandbox="allow-scripts allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+                allow="clipboard-write"
+              />
             ) : (
               <div className="flex h-full items-center justify-center text-center">
                 <div>
