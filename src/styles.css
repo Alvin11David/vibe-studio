@@ -150,9 +150,9 @@
   .shadow-gold { box-shadow: var(--shadow-gold); }
   .shadow-deep { box-shadow: var(--shadow-deep); }
   .glass {
-    background: oklch(0.13 0.006 60 / 0.6);
+    background: color-mix(in oklab, var(--card) 60%, transparent);
     backdrop-filter: blur(20px);
-    border: 1px solid oklch(0.78 0.13 85 / 0.15);
+    border: 1px solid color-mix(in oklab, var(--gold) 18%, transparent);
   }
   .glow-gold {
     box-shadow: 0 0 60px oklch(0.78 0.13 85 / 0.25), 0 0 120px oklch(0.78 0.13 85 / 0.1);
