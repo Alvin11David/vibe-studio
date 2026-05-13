@@ -34,6 +34,7 @@
   --color-gold-deep: var(--gold-deep);
   --color-noir: var(--noir);
   --color-onyx: var(--onyx);
+  --color-ink: var(--ink);
 
   --font-display: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
