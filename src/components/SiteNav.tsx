@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function SiteNav() {
   const { user, loading } = useAuth();
@@ -14,6 +15,7 @@ export function SiteNav() {
         <a href="#features" className="transition-colors hover:text-gold">Features</a>
       </nav>
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         {!loading && user ? (
           <Button asChild variant="default" className="bg-gradient-gold text-noir hover:opacity-90 shadow-gold">
             <Link to="/dashboard">Dashboard</Link>
