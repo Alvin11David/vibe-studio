@@ -19,7 +19,6 @@ import {
   Eye,
   Code2,
   Coins,
-  History,
   RotateCcw,
   MousePointerClick,
   ChevronDown,
