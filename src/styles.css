@@ -95,9 +95,9 @@
 }
 
 .light {
-  /* Keep noir/onyx as deep tones — they're used as ink on gold */
-  --noir: oklch(0.18 0.01 60);
-  --onyx: oklch(0.96 0.008 80);
+  /* Surface tones flip; --ink stays deep so gold buttons keep dark text */
+  --noir: oklch(0.985 0.005 80);
+  --onyx: oklch(0.95 0.008 80);
   --ink: oklch(0.12 0.005 60);
   --gold: oklch(0.62 0.14 78);
   --gold-soft: oklch(0.72 0.12 82);
