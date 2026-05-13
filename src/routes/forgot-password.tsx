@@ -96,7 +96,7 @@ function ForgotPassword() {
                   <Label htmlFor="email">Email</Label>
                   <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1.5 bg-noir/40" placeholder="you@example.com" />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-gold text-noir hover:opacity-90 shadow-gold">
+                <Button type="submit" disabled={loading} className="w-full bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
                   {loading ? "Sending…" : "Send reset code"}
                 </Button>
               </form>
@@ -129,7 +129,7 @@ function ForgotPassword() {
                   <Input id="newPassword" type="password" required minLength={6} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-1.5 bg-noir/40" placeholder="At least 6 characters" />
                 </div>
 
-                <Button type="submit" disabled={loading || otp.length !== 6} className="w-full bg-gradient-gold text-noir hover:opacity-90 shadow-gold">
+                <Button type="submit" disabled={loading || otp.length !== 6} className="w-full bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
                   {loading ? "Updating…" : "Reset password"}
                 </Button>
               </form>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Sparkles, LogOut, Coins } from "lucide-react";
+import { LayoutDashboard, Sparkles, LogOut, Coins, History } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -49,6 +49,9 @@ function AuthLayout() {
           <Link to="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-gold/5 hover:text-gold [&.active]:bg-gold/10 [&.active]:text-gold" activeProps={{ className: "active" }}>
             <LayoutDashboard className="h-4 w-4" /> Projects
           </Link>
+          <Link to="/credits" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-gold/5 hover:text-gold [&.active]:bg-gold/10 [&.active]:text-gold" activeProps={{ className: "active" }}>
+            <History className="h-4 w-4" /> Credit history
+          </Link>
           <Link to="/pricing" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-gold/5 hover:text-gold">
             <Sparkles className="h-4 w-4" /> Get credits
           </Link>
@@ -63,7 +66,7 @@ function AuthLayout() {
             <div className="mt-1 text-[11px] text-muted-foreground">
               {credits?.free ?? 0} free · {credits?.paid ?? 0} premium
             </div>
-            <Button asChild size="sm" className="mt-3 w-full bg-gradient-gold text-noir hover:opacity-90">
+            <Button asChild size="sm" className="mt-3 w-full bg-gradient-gold text-ink hover:opacity-90">
               <Link to="/pricing">Upgrade</Link>
             </Button>
           </div>

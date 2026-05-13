@@ -34,6 +34,7 @@
   --color-gold-deep: var(--gold-deep);
   --color-noir: var(--noir);
   --color-onyx: var(--onyx);
+  --color-ink: var(--ink);
 
   --font-display: "Playfair Display", "Cormorant Garamond", Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -45,6 +46,7 @@
   /* Noir & Gold palette */
   --noir: oklch(0.12 0.005 60);
   --onyx: oklch(0.17 0.008 60);
+  --ink: oklch(0.12 0.005 60);
   --gold: oklch(0.78 0.13 85);
   --gold-soft: oklch(0.88 0.09 88);
   --gold-deep: oklch(0.62 0.14 78);
@@ -93,13 +95,15 @@
 }
 
 .light {
-  --noir: oklch(0.98 0.005 80);
-  --onyx: oklch(0.94 0.008 80);
+  /* Surface tones flip; --ink stays deep so gold buttons keep dark text */
+  --noir: oklch(0.985 0.005 80);
+  --onyx: oklch(0.95 0.008 80);
+  --ink: oklch(0.12 0.005 60);
   --gold: oklch(0.62 0.14 78);
   --gold-soft: oklch(0.72 0.12 82);
   --gold-deep: oklch(0.5 0.15 70);
 
-  --background: oklch(0.99 0.005 80);
+  --background: oklch(0.985 0.005 80);
   --foreground: oklch(0.18 0.01 60);
 
   --card: oklch(1 0 0);
@@ -108,13 +112,13 @@
   --popover-foreground: oklch(0.18 0.01 60);
 
   --primary: oklch(0.62 0.14 78);
-  --primary-foreground: oklch(0.99 0.005 80);
+  --primary-foreground: oklch(0.12 0.005 60);
 
-  --secondary: oklch(0.94 0.008 80);
+  --secondary: oklch(0.95 0.008 80);
   --secondary-foreground: oklch(0.18 0.01 60);
 
   --muted: oklch(0.94 0.008 80);
-  --muted-foreground: oklch(0.45 0.015 70);
+  --muted-foreground: oklch(0.42 0.015 70);
 
   --accent: oklch(0.88 0.06 82);
   --accent-foreground: oklch(0.18 0.01 60);
@@ -123,13 +127,13 @@
   --input: oklch(0.55 0.05 75 / 0.18);
   --ring: oklch(0.62 0.14 78);
 
-  --gradient-noir: radial-gradient(ellipse at top, oklch(0.96 0.01 80), oklch(0.99 0.005 80) 70%);
+  --gradient-noir: radial-gradient(ellipse at top, oklch(0.97 0.01 80), oklch(0.985 0.005 80) 70%);
   --shadow-deep: 0 30px 80px -30px oklch(0.5 0.05 70 / 0.25);
 }
 
 @layer base {
   * { border-color: var(--color-border); }
-  html, body { background: var(--noir); color: var(--foreground); font-family: var(--font-sans); }
+  html, body { background: var(--background); color: var(--foreground); font-family: var(--font-sans); }
   body { background-image: var(--gradient-noir); min-height: 100vh; }
   h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
 }
@@ -146,9 +150,9 @@
   .shadow-gold { box-shadow: var(--shadow-gold); }
   .shadow-deep { box-shadow: var(--shadow-deep); }
   .glass {
-    background: oklch(0.13 0.006 60 / 0.6);
+    background: color-mix(in oklab, var(--card) 60%, transparent);
     backdrop-filter: blur(20px);
-    border: 1px solid oklch(0.78 0.13 85 / 0.15);
+    border: 1px solid color-mix(in oklab, var(--gold) 18%, transparent);
   }
   .glow-gold {
     box-shadow: 0 0 60px oklch(0.78 0.13 85 / 0.25), 0 0 120px oklch(0.78 0.13 85 / 0.1);
