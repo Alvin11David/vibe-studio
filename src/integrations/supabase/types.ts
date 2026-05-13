@@ -103,11 +103,45 @@ export type Database = {
         }
         Relationships: []
       }
+      project_versions: {
+        Row: {
+          created_at: string
+          files: Json
+          id: string
+          message_id: string | null
+          project_id: string
+          summary: string
+          thought_ms: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          files?: Json
+          id?: string
+          message_id?: string | null
+          project_id: string
+          summary?: string
+          thought_ms?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          files?: Json
+          id?: string
+          message_id?: string | null
+          project_id?: string
+          summary?: string
+          thought_ms?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           created_at: string
           current_code: string
           description: string | null
+          files: Json
           id: string
           thumbnail_url: string | null
           title: string
@@ -118,6 +152,7 @@ export type Database = {
           created_at?: string
           current_code?: string
           description?: string | null
+          files?: Json
           id?: string
           thumbnail_url?: string | null
           title?: string
@@ -128,6 +163,7 @@ export type Database = {
           created_at?: string
           current_code?: string
           description?: string | null
+          files?: Json
           id?: string
           thumbnail_url?: string | null
           title?: string
