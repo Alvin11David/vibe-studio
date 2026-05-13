@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Sparkles, LogOut, Coins } from "lucide-react";
+import { LayoutDashboard, Sparkles, LogOut, Coins, History } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated")({
