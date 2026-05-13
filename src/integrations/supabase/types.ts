@@ -169,6 +169,7 @@ export type Database = {
         Args: { _amount: number; _description: string; _user_id: string }
         Returns: undefined
       }
+      grant_daily_free_credits: { Args: never; Returns: number }
       spend_credit: {
         Args: { _description: string; _kind: string; _user_id: string }
         Returns: boolean
