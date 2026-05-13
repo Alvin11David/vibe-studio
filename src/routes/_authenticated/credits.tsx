@@ -19,10 +19,11 @@ interface Tx {
 }
 
 const KIND_META: Record<string, { label: string; icon: typeof Coins; tone: string }> = {
-  daily_grant: { label: "Daily grant", icon: Calendar, tone: "text-gold" },
-  purchase:    { label: "Purchase",    icon: ShoppingBag, tone: "text-gold-soft" },
-  generation:  { label: "Generation",  icon: Zap, tone: "text-muted-foreground" },
-  refund:      { label: "Refund",      icon: TrendingUp, tone: "text-gold" },
+  daily_grant:   { label: "Daily grant", icon: Calendar, tone: "text-gold" },
+  purchase:      { label: "Purchase",    icon: ShoppingBag, tone: "text-gold-soft" },
+  ai_generation: { label: "Generation",  icon: Zap, tone: "text-muted-foreground" },
+  generation:    { label: "Generation",  icon: Zap, tone: "text-muted-foreground" },
+  refund:        { label: "Refund",      icon: TrendingUp, tone: "text-gold" },
 };
 
 function metaFor(kind: string) {
