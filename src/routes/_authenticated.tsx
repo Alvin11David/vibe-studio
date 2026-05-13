@@ -49,6 +49,9 @@ function AuthLayout() {
           <Link to="/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-gold/5 hover:text-gold [&.active]:bg-gold/10 [&.active]:text-gold" activeProps={{ className: "active" }}>
             <LayoutDashboard className="h-4 w-4" /> Projects
           </Link>
+          <Link to="/credits" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-gold/5 hover:text-gold [&.active]:bg-gold/10 [&.active]:text-gold" activeProps={{ className: "active" }}>
+            <History className="h-4 w-4" /> Credit history
+          </Link>
           <Link to="/pricing" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-gold/5 hover:text-gold">
             <Sparkles className="h-4 w-4" /> Get credits
           </Link>
