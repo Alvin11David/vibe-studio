@@ -38,7 +38,7 @@ function Landing() {
         </p>
 
         <div className="animate-float-up mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row" style={{ animationDelay: "0.3s" }}>
-          <Button asChild size="lg" className="group h-14 bg-gradient-gold px-8 text-base text-noir hover:opacity-90 shadow-gold glow-gold">
+          <Button asChild size="lg" className="group h-14 bg-gradient-gold px-8 text-base text-ink hover:opacity-90 shadow-gold glow-gold">
             <Link to="/auth">
               Start building free
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -124,7 +124,7 @@ function Landing() {
               No card. No catch. Burn through them generating ideas, then upgrade to a pack of premium credits whenever you need to ship.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-gradient-gold text-noir hover:opacity-90 shadow-gold">
+              <Button asChild size="lg" className="bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
                 <Link to="/auth">Claim daily credits <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-gold/30 bg-transparent">
@@ -165,7 +165,7 @@ function Landing() {
         <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
           Stop describing software. Start producing it.
         </p>
-        <Button asChild size="lg" className="mt-10 h-14 bg-gradient-gold px-10 text-base text-noir shadow-gold glow-gold hover:opacity-90">
+        <Button asChild size="lg" className="mt-10 h-14 bg-gradient-gold px-10 text-base text-ink shadow-gold glow-gold hover:opacity-90">
           <Link to="/auth">Enter Aurum <ArrowRight className="ml-2 h-4 w-4" /></Link>
         </Button>
       </section>

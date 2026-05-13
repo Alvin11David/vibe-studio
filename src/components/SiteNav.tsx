@@ -17,7 +17,7 @@ export function SiteNav() {
       <div className="flex items-center gap-3">
         <ThemeToggle />
         {!loading && user ? (
-          <Button asChild variant="default" className="bg-gradient-gold text-noir hover:opacity-90 shadow-gold">
+          <Button asChild variant="default" className="bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
             <Link to="/dashboard">Dashboard</Link>
           </Button>
         ) : (
@@ -25,7 +25,7 @@ export function SiteNav() {
             <Button asChild variant="ghost" className="hidden sm:inline-flex">
               <Link to="/auth">Sign in</Link>
             </Button>
-            <Button asChild className="bg-gradient-gold text-noir hover:opacity-90 shadow-gold">
+            <Button asChild className="bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
               <Link to="/auth">Start building</Link>
             </Button>
           </>

@@ -63,7 +63,7 @@ function AuthLayout() {
             <div className="mt-1 text-[11px] text-muted-foreground">
               {credits?.free ?? 0} free · {credits?.paid ?? 0} premium
             </div>
-            <Button asChild size="sm" className="mt-3 w-full bg-gradient-gold text-noir hover:opacity-90">
+            <Button asChild size="sm" className="mt-3 w-full bg-gradient-gold text-ink hover:opacity-90">
               <Link to="/pricing">Upgrade</Link>
             </Button>
           </div>

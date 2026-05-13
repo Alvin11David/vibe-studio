@@ -37,7 +37,7 @@ function Pricing() {
           {packs.map((p) => (
             <div key={p.name} className={`relative rounded-2xl border p-8 text-left transition-all hover:shadow-gold ${p.popular ? "border-gold/60 bg-gradient-to-br from-gold/10 to-transparent shadow-gold" : "border-gold/15 bg-card"}`}>
               {p.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-gold px-4 py-1 text-[10px] uppercase tracking-widest text-noir">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-gold px-4 py-1 text-[10px] uppercase tracking-widest text-ink">
                   Most chosen
                 </div>
               )}
@@ -56,7 +56,7 @@ function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Button onClick={() => buy(p.name)} className={`mt-8 w-full ${p.popular ? "bg-gradient-gold text-noir hover:opacity-90 shadow-gold" : "bg-onyx hover:bg-gold/10 border border-gold/20"}`}>
+              <Button onClick={() => buy(p.name)} className={`mt-8 w-full ${p.popular ? "bg-gradient-gold text-ink hover:opacity-90 shadow-gold" : "bg-onyx hover:bg-gold/10 border border-gold/20"}`}>
                 Get {p.name}
               </Button>
             </div>

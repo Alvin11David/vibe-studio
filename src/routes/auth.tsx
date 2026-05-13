@@ -142,7 +142,7 @@ function AuthPage() {
               <Button
                 onClick={verifyOtp}
                 disabled={loading || otp.length !== 6}
-                className="mt-8 w-full bg-gradient-gold text-noir hover:opacity-90 shadow-gold"
+                className="mt-8 w-full bg-gradient-gold text-ink hover:opacity-90 shadow-gold"
               >
                 {loading ? "Verifying…" : "Verify & continue"}
               </Button>
@@ -210,7 +210,7 @@ function AuthPage() {
                   </div>
                   <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1.5 bg-noir/40" />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-gold text-noir hover:opacity-90 shadow-gold">
+                <Button type="submit" disabled={loading} className="w-full bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
                   {loading ? "..." : mode === "signup" ? "Send verification code" : "Sign in"}
                 </Button>
               </form>

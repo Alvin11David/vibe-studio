@@ -99,10 +99,10 @@ function Builder() {
           <div className="font-display text-lg line-clamp-1">{title || "Loading…"}</div>
         </div>
         <div className="flex items-center gap-2 rounded-lg border border-gold/15 bg-onyx p-1">
-          <button onClick={() => setView("preview")} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs ${view === "preview" ? "bg-gradient-gold text-noir" : "text-muted-foreground"}`}>
+          <button onClick={() => setView("preview")} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs ${view === "preview" ? "bg-gradient-gold text-ink" : "text-muted-foreground"}`}>
             <Eye className="h-3 w-3" /> Preview
           </button>
-          <button onClick={() => setView("code")} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs ${view === "code" ? "bg-gradient-gold text-noir" : "text-muted-foreground"}`}>
+          <button onClick={() => setView("code")} className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs ${view === "code" ? "bg-gradient-gold text-ink" : "text-muted-foreground"}`}>
             <Code2 className="h-3 w-3" /> Code
           </button>
         </div>
@@ -153,7 +153,7 @@ function Builder() {
                 rows={2}
                 className="flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
               />
-              <Button onClick={() => send(undefined, imageDataUrl)} disabled={busy || !input.trim()} size="sm" className="bg-gradient-gold text-noir hover:opacity-90">
+              <Button onClick={() => send(undefined, imageDataUrl)} disabled={busy || !input.trim()} size="sm" className="bg-gradient-gold text-ink hover:opacity-90">
                 <Send className="h-3.5 w-3.5" />
               </Button>
             </div>
