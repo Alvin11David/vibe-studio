@@ -83,10 +83,7 @@ export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResul
       build.onResolve({ filter: /.*/ }, (args: any) => {
         if (args.kind === "entry-point") return { path: normalizePath(args.path), namespace: "vfs" };
         if (EXTERNALS.has(args.path)) {
-          return {
-            path: `https://esm.sh/${args.path}?dev&external=react,react-dom`,
-            external: true,
-          };
+          return { path: args.path, external: true };
         }
         if (/^https?:/.test(args.path)) return { path: args.path, external: true };
         if (args.path.startsWith(".")) {
@@ -95,7 +92,7 @@ export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResul
           return { errors: [{ text: `Cannot resolve "${args.path}" from "${args.importer}"` }] };
         }
         // bare import not in externals — proxy through esm.sh as best effort
-        return { path: `https://esm.sh/${args.path}`, external: true };
+        return { path: `https://esm.sh/${args.path}?dev&external=react,react-dom`, external: true };
       });
       build.onLoad({ filter: /.*/, namespace: "vfs" }, (args: any) => {
         const contents = files[args.path];
@@ -138,6 +135,20 @@ export function buildPreviewSrcDoc(bundleCode: string, opts: { visualEdit: boole
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <script src="https://cdn.tailwindcss.com"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19?dev",
+    "react/": "https://esm.sh/react@19/",
+    "react-dom": "https://esm.sh/react-dom@19?dev&external=react",
+    "react-dom/": "https://esm.sh/react-dom@19/",
+    "react-dom/client": "https://esm.sh/react-dom@19/client?dev&external=react",
+    "react/jsx-runtime": "https://esm.sh/react@19/jsx-runtime?dev",
+    "react/jsx-dev-runtime": "https://esm.sh/react@19/jsx-dev-runtime?dev",
+    "lucide-react": "https://esm.sh/lucide-react?dev&external=react"
+  }
+}
+</script>
 <style>html,body,#root{height:100%;margin:0;background:#0a0a0a;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif}${css}</style>
 </head>
 <body>
