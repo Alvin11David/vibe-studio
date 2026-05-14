@@ -29,18 +29,21 @@ function Dashboard() {
     });
   }, []);
 
-  const create = async () => {
-    if (!prompt.trim()) { toast.error("Describe what you want to build"); return; }
+  const create = async (overridePrompt?: string, titleOverride?: string) => {
+    const p = (overridePrompt ?? prompt).trim();
+    if (!p) { toast.error("Describe what you want to build"); return; }
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;
     const { data, error } = await supabase.from("projects").insert({
       user_id: u.user.id,
-      title: prompt.slice(0, 60),
-      description: prompt,
+      title: (titleOverride ?? p).slice(0, 60),
+      description: p,
     }).select("id").single();
     if (error || !data) { toast.error("Failed to create project"); return; }
-    navigate({ to: "/builder/$id", params: { id: data.id }, search: { initial: prompt } as any });
+    navigate({ to: "/builder/$id", params: { id: data.id }, search: { initial: p } as any });
   };
+
+  const startFromTemplate = (t: Template) => create(t.prompt, t.title);
 
   return (
     <div className="mx-auto max-w-6xl px-8 py-12">
