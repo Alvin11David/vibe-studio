@@ -138,6 +138,20 @@ export function buildPreviewSrcDoc(bundleCode: string, opts: { visualEdit: boole
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <script src="https://cdn.tailwindcss.com"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19?dev",
+    "react/": "https://esm.sh/react@19/",
+    "react-dom": "https://esm.sh/react-dom@19?dev&external=react",
+    "react-dom/": "https://esm.sh/react-dom@19/",
+    "react-dom/client": "https://esm.sh/react-dom@19/client?dev&external=react",
+    "react/jsx-runtime": "https://esm.sh/react@19/jsx-runtime?dev",
+    "react/jsx-dev-runtime": "https://esm.sh/react@19/jsx-dev-runtime?dev",
+    "lucide-react": "https://esm.sh/lucide-react?dev&external=react"
+  }
+}
+</script>
 <style>html,body,#root{height:100%;margin:0;background:#0a0a0a;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif}${css}</style>
 </head>
 <body>
