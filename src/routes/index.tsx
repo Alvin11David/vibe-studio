@@ -172,7 +172,7 @@ function Landing() {
 
       <footer className="relative z-10 border-t border-gold/10 px-6 py-10">
         <div className="mx-auto flex max-w-7xl items-center justify-between text-xs text-muted-foreground">
-          <div>© 2026 Aurum.dev — Forged in pure intent.</div>
+          <div>© 2026 Aurum.dev — Crafted with intent.</div>
           <div className="flex gap-6"><Link to="/pricing" className="hover:text-gold">Pricing</Link><Link to="/auth" className="hover:text-gold">Sign in</Link></div>
         </div>
       </footer>
