@@ -67,7 +67,7 @@ function Dashboard() {
             placeholder="A moody portfolio for an architect with parallax hero…"
             className="flex-1 rounded-xl border border-gold/20 bg-noir/60 px-5 py-4 text-base outline-none placeholder:text-muted-foreground/60 focus:border-gold/60"
           />
-          <Button onClick={create} size="lg" className="h-auto bg-gradient-gold px-6 text-ink shadow-gold hover:opacity-90">
+          <Button onClick={() => create()} size="lg" className="h-auto bg-gradient-gold px-6 text-ink shadow-gold hover:opacity-90">
             Build <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
