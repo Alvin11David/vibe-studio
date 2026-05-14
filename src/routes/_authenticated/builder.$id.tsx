@@ -285,8 +285,12 @@ function Builder() {
         </div>
       </header>
 
+      <div className="mb-px flex shrink-0 border-b border-gold/10 bg-noir/40 lg:hidden">
+        <button onClick={() => setMobilePane("chat")} className={`flex-1 px-4 py-2 text-xs uppercase tracking-widest ${mobilePane === "chat" ? "border-b-2 border-gold text-gold" : "text-muted-foreground"}`}>Chat</button>
+        <button onClick={() => setMobilePane("preview")} className={`flex-1 px-4 py-2 text-xs uppercase tracking-widest ${mobilePane === "preview" ? "border-b-2 border-gold text-gold" : "text-muted-foreground"}`}>Preview</button>
+      </div>
       <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[420px_1fr]">
-        <aside className="flex h-full flex-col border-r border-gold/10 bg-noir/40">
+        <aside className={`${mobilePane === "chat" ? "flex" : "hidden"} h-full flex-col border-r border-gold/10 bg-noir/40 lg:flex`}>
           <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
             {messages.length === 0 && !busy && (
               <div className="rounded-xl border border-dashed border-gold/20 p-6 text-center">
