@@ -355,7 +355,7 @@ function Builder() {
           </div>
         </aside>
 
-        <section className="relative bg-noir">
+        <section className={`${mobilePane === "preview" ? "block" : "hidden"} relative bg-noir lg:block`}>
           {view === "preview" ? (
             <div className="relative h-full w-full">
               {bundling && (
