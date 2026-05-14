@@ -77,34 +77,42 @@ function Builder() {
   // Load project + history
   useEffect(() => {
     (async () => {
-      const [{ data: project }, { data: msgs }, { data: versions }] = await Promise.all([
-        supabase.from("projects").select("title,files").eq("id", id).maybeSingle(),
-        supabase.from("messages").select("id,role,content,image_url,created_at").eq("project_id", id).order("created_at"),
-        supabase.from("project_versions").select("id,message_id,files,thought_ms").eq("project_id", id).order("created_at"),
-      ]);
-      if (project) {
-        setTitle(project.title);
-        const f = (project.files as ProjectFiles) || {};
-        setFiles(f);
-        setActiveFiles(f);
-      }
-      if (msgs) {
-        const versionByMsg = new Map<string, any>();
-        for (const v of versions ?? []) if (v.message_id) versionByMsg.set(v.message_id, v);
-        setMessages(
-          (msgs as any[]).map((m) => ({
-            ...m,
-            versionId: versionByMsg.get(m.id)?.id ?? null,
-            thoughtMs: versionByMsg.get(m.id)?.thought_ms ?? 0,
-            files: versionByMsg.get(m.id)?.files as ProjectFiles | undefined,
-          }))
-        );
-      }
-      // Seed starter files if none
-      const cur = (project?.files as ProjectFiles) || {};
-      if (Object.keys(cur).length === 0) {
-        const r: any = await ensureFiles({ data: { projectId: id } });
-        if (r?.files) { setFiles(r.files); setActiveFiles(r.files); }
+      try {
+        const [{ data: project }, { data: msgs }, { data: versions }] = await Promise.all([
+          supabase.from("projects").select("title,files").eq("id", id).maybeSingle(),
+          supabase.from("messages").select("id,role,content,image_url,created_at").eq("project_id", id).order("created_at"),
+          supabase.from("project_versions").select("id,message_id,files,thought_ms").eq("project_id", id).order("created_at"),
+        ]);
+        if (project) {
+          setTitle(project.title);
+          const f = (project.files as ProjectFiles) || {};
+          setFiles(f);
+          setActiveFiles(f);
+        }
+        if (msgs) {
+          const versionByMsg = new Map<string, any>();
+          for (const v of versions ?? []) if (v.message_id) versionByMsg.set(v.message_id, v);
+          setMessages(
+            (msgs as any[]).map((m) => ({
+              ...m,
+              versionId: versionByMsg.get(m.id)?.id ?? null,
+              thoughtMs: versionByMsg.get(m.id)?.thought_ms ?? 0,
+              files: versionByMsg.get(m.id)?.files as ProjectFiles | undefined,
+            }))
+          );
+        }
+        const cur = (project?.files as ProjectFiles) || {};
+        if (Object.keys(cur).length === 0) {
+          try {
+            const r: any = await ensureFiles({ data: { projectId: id } });
+            if (r?.files) { setFiles(r.files); setActiveFiles(r.files); }
+          } catch (e) {
+            console.warn("ensureFiles skipped", e);
+          }
+        }
+      } catch (e) {
+        console.error("Builder load failed", e);
+        toast.error("Failed to load project");
       }
     })();
   }, [id]);
