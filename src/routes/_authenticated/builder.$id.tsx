@@ -417,7 +417,7 @@ function AssistantCard({ msg, onPreview, onRestore }: { msg: Msg; onPreview: (f:
       </div>
       <div className="p-3 text-sm">
         {msg.streaming && !msg.content ? (
-          <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Forging your app…</div>
+          <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Building your app…</div>
         ) : (
           <div className="prose prose-sm prose-invert max-w-none [&_a]:text-gold">
             <ReactMarkdown>{msg.content || "Updated."}</ReactMarkdown>
