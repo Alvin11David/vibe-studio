@@ -144,7 +144,7 @@ function Landing() {
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
           {[
             { step: "01", title: "Speak the vision", desc: "Type, paste, drop. Whatever shape your idea takes." },
-            { step: "02", title: "Watch it forge", desc: "AI writes the code, the preview animates into existence." },
+            { step: "02", title: "Watch it build", desc: "AI writes the code, the preview animates into existence." },
             { step: "03", title: "Refine in chat", desc: "Tweak with words. The whole app obeys." },
           ].map((s, i) => (
             <div key={i} className="relative rounded-2xl border border-gold/15 bg-card p-8 transition-all hover:border-gold/40 hover:shadow-gold">
@@ -172,7 +172,7 @@ function Landing() {
 
       <footer className="relative z-10 border-t border-gold/10 px-6 py-10">
         <div className="mx-auto flex max-w-7xl items-center justify-between text-xs text-muted-foreground">
-          <div>© 2026 Aurum.dev — Forged in pure intent.</div>
+          <div>© 2026 Aurum.dev — Crafted with intent.</div>
           <div className="flex gap-6"><Link to="/pricing" className="hover:text-gold">Pricing</Link><Link to="/auth" className="hover:text-gold">Sign in</Link></div>
         </div>
       </footer>

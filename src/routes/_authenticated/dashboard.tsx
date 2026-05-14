@@ -64,7 +64,7 @@ function Dashboard() {
             className="flex-1 rounded-xl border border-gold/20 bg-noir/60 px-5 py-4 text-base outline-none placeholder:text-muted-foreground/60 focus:border-gold/60"
           />
           <Button onClick={create} size="lg" className="h-auto bg-gradient-gold px-6 text-ink shadow-gold hover:opacity-90">
-            Forge it <ArrowRight className="ml-2 h-4 w-4" />
+            Build <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -79,7 +79,7 @@ function Dashboard() {
         ) : projects.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-gold/20 p-12 text-center">
             <Folder className="mx-auto h-10 w-10 text-gold/40" />
-            <p className="mt-4 text-muted-foreground">No projects yet. Forge your first above.</p>
+            <p className="mt-4 text-muted-foreground">No projects yet. Build your first above.</p>
           </div>
         ) : (
           <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

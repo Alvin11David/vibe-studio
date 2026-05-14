@@ -249,7 +249,9 @@ function Builder() {
     [bundleCode, editMode]
   );
 
-  const filesList = useMemo(() => Object.entries(activeFiles ?? files).sort(([a], [b]) => a.localeCompare(b)), [activeFiles, files]);
+  const currentFiles: ProjectFiles = (activeFiles && typeof activeFiles === "object" ? activeFiles : null) ?? (files && typeof files === "object" ? files : {});
+  const filesList = useMemo(() => Object.entries(currentFiles).sort(([a], [b]) => a.localeCompare(b)), [currentFiles]);
+  const [mobilePane, setMobilePane] = useState<"chat" | "preview">("chat");
   const [activeFile, setActiveFile] = useState<string>("App.tsx");
   useEffect(() => {
     if (filesList.length && !filesList.find(([n]) => n === activeFile)) setActiveFile(filesList[0][0]);
@@ -283,8 +285,12 @@ function Builder() {
         </div>
       </header>
 
+      <div className="mb-px flex shrink-0 border-b border-gold/10 bg-noir/40 lg:hidden">
+        <button onClick={() => setMobilePane("chat")} className={`flex-1 px-4 py-2 text-xs uppercase tracking-widest ${mobilePane === "chat" ? "border-b-2 border-gold text-gold" : "text-muted-foreground"}`}>Chat</button>
+        <button onClick={() => setMobilePane("preview")} className={`flex-1 px-4 py-2 text-xs uppercase tracking-widest ${mobilePane === "preview" ? "border-b-2 border-gold text-gold" : "text-muted-foreground"}`}>Preview</button>
+      </div>
       <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[420px_1fr]">
-        <aside className="flex h-full flex-col border-r border-gold/10 bg-noir/40">
+        <aside className={`${mobilePane === "chat" ? "flex" : "hidden"} h-full flex-col border-r border-gold/10 bg-noir/40 lg:flex`}>
           <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
             {messages.length === 0 && !busy && (
               <div className="rounded-xl border border-dashed border-gold/20 p-6 text-center">
@@ -349,7 +355,7 @@ function Builder() {
           </div>
         </aside>
 
-        <section className="relative bg-noir">
+        <section className={`${mobilePane === "preview" ? "block" : "hidden"} relative bg-noir lg:block`}>
           {view === "preview" ? (
             <div className="relative h-full w-full">
               {bundling && (
@@ -384,7 +390,7 @@ function Builder() {
                   </button>
                 ))}
               </div>
-              <pre className="h-full overflow-auto bg-onyx p-6 text-xs text-gold-soft"><code>{(activeFiles ?? files)[activeFile] ?? "// no file"}</code></pre>
+              <pre className="h-full overflow-auto bg-onyx p-6 text-xs text-gold-soft"><code>{currentFiles[activeFile] ?? "// no file"}</code></pre>
             </div>
           )}
         </section>
@@ -411,7 +417,7 @@ function AssistantCard({ msg, onPreview, onRestore }: { msg: Msg; onPreview: (f:
       </div>
       <div className="p-3 text-sm">
         {msg.streaming && !msg.content ? (
-          <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Forging your app…</div>
+          <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Building your app…</div>
         ) : (
           <div className="prose prose-sm prose-invert max-w-none [&_a]:text-gold">
             <ReactMarkdown>{msg.content || "Updated."}</ReactMarkdown>
