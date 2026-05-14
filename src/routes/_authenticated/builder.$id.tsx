@@ -390,7 +390,7 @@ function Builder() {
                   </button>
                 ))}
               </div>
-              <pre className="h-full overflow-auto bg-onyx p-6 text-xs text-gold-soft"><code>{(activeFiles ?? files)[activeFile] ?? "// no file"}</code></pre>
+              <pre className="h-full overflow-auto bg-onyx p-6 text-xs text-gold-soft"><code>{currentFiles[activeFile] ?? "// no file"}</code></pre>
             </div>
           )}
         </section>
