@@ -73,6 +73,36 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Templates */}
+      <div className="mt-12">
+        <div className="flex items-end justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-gold"><Wand2 className="h-3 w-3" /> Templates</div>
+            <h2 className="mt-2 font-display text-2xl">Start from a blueprint</h2>
+          </div>
+          <p className="hidden text-sm text-muted-foreground md:block">One click. One credit. Yours to remix.</p>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {TEMPLATES.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                onClick={() => startFromTemplate(t)}
+                className="group relative overflow-hidden rounded-xl border border-gold/15 bg-card p-5 text-left transition-all hover:-translate-y-0.5 hover:border-gold/40 hover:shadow-gold"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/10 text-gold transition-colors group-hover:bg-gold/20">
+                  <Icon className="h-4 w-4" />
+                </div>
+                <h3 className="mt-3 font-display text-base">{t.title}</h3>
+                <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{t.tagline}</p>
+                <ArrowRight className="absolute right-4 top-4 h-4 w-4 text-gold opacity-0 transition-opacity group-hover:opacity-100" />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Projects grid */}
       <div className="mt-12">
         <h2 className="font-display text-2xl text-muted-foreground">Recent</h2>
