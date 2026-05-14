@@ -249,7 +249,9 @@ function Builder() {
     [bundleCode, editMode]
   );
 
-  const filesList = useMemo(() => Object.entries(activeFiles ?? files).sort(([a], [b]) => a.localeCompare(b)), [activeFiles, files]);
+  const currentFiles: ProjectFiles = (activeFiles && typeof activeFiles === "object" ? activeFiles : null) ?? (files && typeof files === "object" ? files : {});
+  const filesList = useMemo(() => Object.entries(currentFiles).sort(([a], [b]) => a.localeCompare(b)), [currentFiles]);
+  const [mobilePane, setMobilePane] = useState<"chat" | "preview">("chat");
   const [activeFile, setActiveFile] = useState<string>("App.tsx");
   useEffect(() => {
     if (filesList.length && !filesList.find(([n]) => n === activeFile)) setActiveFile(filesList[0][0]);
