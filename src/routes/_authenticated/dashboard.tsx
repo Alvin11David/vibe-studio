@@ -2,9 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Folder, ArrowRight, Sparkles } from "lucide-react";
+import { Folder, ArrowRight, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
+import { TEMPLATES, type Template } from "@/lib/templates";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
