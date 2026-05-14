@@ -83,10 +83,7 @@ export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResul
       build.onResolve({ filter: /.*/ }, (args: any) => {
         if (args.kind === "entry-point") return { path: normalizePath(args.path), namespace: "vfs" };
         if (EXTERNALS.has(args.path)) {
-          return {
-            path: `https://esm.sh/${args.path}?dev&external=react,react-dom`,
-            external: true,
-          };
+          return { path: args.path, external: true };
         }
         if (/^https?:/.test(args.path)) return { path: args.path, external: true };
         if (args.path.startsWith(".")) {
@@ -95,7 +92,7 @@ export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResul
           return { errors: [{ text: `Cannot resolve "${args.path}" from "${args.importer}"` }] };
         }
         // bare import not in externals — proxy through esm.sh as best effort
-        return { path: `https://esm.sh/${args.path}`, external: true };
+        return { path: `https://esm.sh/${args.path}?dev&external=react,react-dom`, external: true };
       });
       build.onLoad({ filter: /.*/, namespace: "vfs" }, (args: any) => {
         const contents = files[args.path];
