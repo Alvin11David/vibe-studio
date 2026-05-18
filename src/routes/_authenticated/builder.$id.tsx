@@ -293,6 +293,20 @@ function Builder() {
     () => filesList.map(([n]) => n).filter((n) => /\.(tsx|jsx|ts|js)$/.test(n)),
     [filesList]
   );
+  const entryGroups = useMemo(() => {
+    const groups = new Map<string, string[]>();
+    for (const path of entryCandidates) {
+      const idx = path.lastIndexOf("/");
+      const dir = idx === -1 ? "(root)" : path.slice(0, idx);
+      if (!groups.has(dir)) groups.set(dir, []);
+      groups.get(dir)!.push(path);
+    }
+    return Array.from(groups.entries()).sort(([a], [b]) => {
+      if (a === "(root)") return -1;
+      if (b === "(root)") return 1;
+      return a.localeCompare(b);
+    });
+  }, [entryCandidates]);
   const [mobilePane, setMobilePane] = useState<"chat" | "preview">("chat");
   const [activeFile, setActiveFile] = useState<string>("App.tsx");
   useEffect(() => {
