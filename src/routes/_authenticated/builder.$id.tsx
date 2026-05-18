@@ -289,11 +289,37 @@ function Builder() {
 
   const currentFiles: ProjectFiles = (activeFiles && typeof activeFiles === "object" ? activeFiles : null) ?? (files && typeof files === "object" ? files : {});
   const filesList = useMemo(() => Object.entries(currentFiles).sort(([a], [b]) => a.localeCompare(b)), [currentFiles]);
+  const entryCandidates = useMemo(
+    () => filesList.map(([n]) => n).filter((n) => /\.(tsx|jsx|ts|js)$/.test(n)),
+    [filesList]
+  );
   const [mobilePane, setMobilePane] = useState<"chat" | "preview">("chat");
   const [activeFile, setActiveFile] = useState<string>("App.tsx");
   useEffect(() => {
     if (filesList.length && !filesList.find(([n]) => n === activeFile)) setActiveFile(filesList[0][0]);
   }, [filesList, activeFile]);
+
+  const onUploadEntry = (f: File | null) => {
+    if (!f) return;
+    if (!/\.(tsx|jsx|ts|js)$/.test(f.name)) { toast.error("Entry must be .tsx/.jsx/.ts/.js"); return; }
+    if (f.size > 512 * 1024) { toast.error("Entry file too large (max 512KB)"); return; }
+    const r = new FileReader();
+    r.onload = () => {
+      const text = String(r.result ?? "");
+      const path = f.name.replace(/^\.?\/+/, "");
+      const next = { ...currentFiles, [path]: text };
+      setActiveFiles(next);
+      setEntryPath(path);
+      toast.success(`Loaded entry: ${path}`);
+    };
+    r.readAsText(f);
+  };
+
+  const retryPreview = () => {
+    setHealthError("");
+    setHealthState("loading");
+    setPreviewKey((k) => k + 1);
+  };
 
   return (
     <div className="flex h-screen flex-col">
