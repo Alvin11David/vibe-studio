@@ -293,6 +293,20 @@ function Builder() {
     () => filesList.map(([n]) => n).filter((n) => /\.(tsx|jsx|ts|js)$/.test(n)),
     [filesList]
   );
+  const entryGroups = useMemo(() => {
+    const groups = new Map<string, string[]>();
+    for (const path of entryCandidates) {
+      const idx = path.lastIndexOf("/");
+      const dir = idx === -1 ? "(root)" : path.slice(0, idx);
+      if (!groups.has(dir)) groups.set(dir, []);
+      groups.get(dir)!.push(path);
+    }
+    return Array.from(groups.entries()).sort(([a], [b]) => {
+      if (a === "(root)") return -1;
+      if (b === "(root)") return 1;
+      return a.localeCompare(b);
+    });
+  }, [entryCandidates]);
   const [mobilePane, setMobilePane] = useState<"chat" | "preview">("chat");
   const [activeFile, setActiveFile] = useState<string>("App.tsx");
   useEffect(() => {
@@ -303,10 +317,14 @@ function Builder() {
     if (!f) return;
     if (!/\.(tsx|jsx|ts|js)$/.test(f.name)) { toast.error("Entry must be .tsx/.jsx/.ts/.js"); return; }
     if (f.size > 512 * 1024) { toast.error("Entry file too large (max 512KB)"); return; }
+    const rel = (f as any).webkitRelativePath as string | undefined;
+    const suggested = rel && rel.includes("/") ? rel : f.name;
+    const input = window.prompt("Save uploaded entry as (folder/file allowed):", suggested) ?? "";
+    const path = input.trim().replace(/^\.?\/+/, "");
+    if (!path || !/\.(tsx|jsx|ts|js)$/.test(path)) { toast.error("Invalid path"); return; }
     const r = new FileReader();
     r.onload = () => {
       const text = String(r.result ?? "");
-      const path = f.name.replace(/^\.?\/+/, "");
       const next = { ...currentFiles, [path]: text };
       setActiveFiles(next);
       setEntryPath(path);
@@ -430,9 +448,13 @@ function Builder() {
               onChange={(e) => setEntryPath(e.target.value)}
               className="rounded border border-gold/15 bg-onyx px-2 py-1 text-xs text-gold-soft outline-none focus:border-gold/40"
             >
-              {entryCandidates.length === 0 && <option value="App.tsx">App.tsx</option>}
-              {entryCandidates.map((n) => (
-                <option key={n} value={n}>{n}</option>
+              {entryGroups.length === 0 && <option value="App.tsx">App.tsx</option>}
+              {entryGroups.map(([dir, paths]) => (
+                <optgroup key={dir} label={dir}>
+                  {paths.map((n) => (
+                    <option key={n} value={n}>{dir === "(root)" ? n : n.slice(dir.length + 1)}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             <label className="flex cursor-pointer items-center gap-1 rounded border border-gold/15 px-2 py-1 text-muted-foreground hover:border-gold/40 hover:text-gold">
