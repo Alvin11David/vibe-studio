@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   RefreshCw,
   Upload,
+  FolderPlus,
   FileCode,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -76,6 +77,7 @@ function Builder() {
   const [healthState, setHealthState] = useState<"idle" | "loading" | "ready" | "error" | "timeout">("idle");
   const [healthError, setHealthError] = useState<string>("");
   const [previewKey, setPreviewKey] = useState(0);
+  const [pendingFolder, setPendingFolder] = useState<string>("");
   const [showDebug, setShowDebug] = useState(false);
 
   const generate = useServerFn(generateProject);
@@ -313,22 +315,59 @@ function Builder() {
     if (filesList.length && !filesList.find(([n]) => n === activeFile)) setActiveFile(filesList[0][0]);
   }, [filesList, activeFile]);
 
+  const sanitizePath = (raw: string): string | null => {
+    const cleaned = raw.trim().replace(/^\.?\/+/, "").replace(/\\/g, "/").replace(/\/+/g, "/");
+    if (!cleaned) return null;
+    const segments = cleaned.split("/");
+    for (const seg of segments) {
+      if (!seg || seg === "." || seg === "..") return null;
+      if (!/^[A-Za-z0-9._-]+$/.test(seg)) return null;
+    }
+    return cleaned;
+  };
+
+  const onNewFolder = () => {
+    const input = window.prompt(
+      "New folder (e.g. src/components). Slashes create nested folders. Your next upload will save here.",
+      pendingFolder || "src/components",
+    );
+    if (input === null) return;
+    if (!input.trim()) { setPendingFolder(""); toast.success("Cleared target folder"); return; }
+    const folder = sanitizePath(input);
+    if (!folder) { toast.error("Invalid folder name"); return; }
+    setPendingFolder(folder);
+    toast.success(`Next upload → ${folder}/`);
+  };
+
   const onUploadEntry = (f: File | null) => {
     if (!f) return;
     if (!/\.(tsx|jsx|ts|js)$/.test(f.name)) { toast.error("Entry must be .tsx/.jsx/.ts/.js"); return; }
     if (f.size > 512 * 1024) { toast.error("Entry file too large (max 512KB)"); return; }
     const rel = (f as any).webkitRelativePath as string | undefined;
-    const suggested = rel && rel.includes("/") ? rel : f.name;
-    const input = window.prompt("Save uploaded entry as (folder/file allowed):", suggested) ?? "";
-    const path = input.trim().replace(/^\.?\/+/, "");
-    if (!path || !/\.(tsx|jsx|ts|js)$/.test(path)) { toast.error("Invalid path"); return; }
+    const suggested = pendingFolder
+      ? `${pendingFolder}/${f.name}`
+      : rel && rel.includes("/")
+        ? rel
+        : f.name;
+    const input = window.prompt(
+      "Save uploaded entry as (use slashes to create folders, e.g. src/components/Button.tsx):",
+      suggested,
+    );
+    if (input === null) return;
+    const path = sanitizePath(input);
+    if (!path || !/\.(tsx|jsx|ts|js)$/.test(path)) {
+      toast.error("Invalid path. Use letters, numbers, . _ - and / only.");
+      return;
+    }
     const r = new FileReader();
     r.onload = () => {
       const text = String(r.result ?? "");
       const next = { ...currentFiles, [path]: text };
       setActiveFiles(next);
       setEntryPath(path);
-      toast.success(`Loaded entry: ${path}`);
+      setPendingFolder("");
+      const folder = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "(root)";
+      toast.success(`Loaded entry: ${path}${folder !== "(root)" ? ` (created ${folder}/)` : ""}`);
     };
     r.readAsText(f);
   };
@@ -459,8 +498,16 @@ function Builder() {
             </select>
             <label className="flex cursor-pointer items-center gap-1 rounded border border-gold/15 px-2 py-1 text-muted-foreground hover:border-gold/40 hover:text-gold">
               <Upload className="h-3 w-3" /> Upload
-              <input type="file" accept=".tsx,.jsx,.ts,.js" className="hidden" onChange={(e) => onUploadEntry(e.target.files?.[0] ?? null)} />
+              <input type="file" accept=".tsx,.jsx,.ts,.js" className="hidden" onChange={(e) => { onUploadEntry(e.target.files?.[0] ?? null); e.target.value = ""; }} />
             </label>
+            <button
+              type="button"
+              onClick={onNewFolder}
+              className={`flex items-center gap-1 rounded border px-2 py-1 ${pendingFolder ? "border-gold/40 text-gold" : "border-gold/15 text-muted-foreground hover:border-gold/40 hover:text-gold"}`}
+              title="Set a destination folder for the next upload"
+            >
+              <FolderPlus className="h-3 w-3" /> {pendingFolder ? `→ ${pendingFolder}/` : "New folder"}
+            </button>
             <div className="ml-1 truncate text-[10px] uppercase tracking-widest text-muted-foreground">
               Resolved: <span className="font-mono text-gold-soft">{resolvedEntry ?? "—"}</span>
             </div>
