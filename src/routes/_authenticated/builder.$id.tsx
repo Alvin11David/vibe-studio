@@ -317,10 +317,14 @@ function Builder() {
     if (!f) return;
     if (!/\.(tsx|jsx|ts|js)$/.test(f.name)) { toast.error("Entry must be .tsx/.jsx/.ts/.js"); return; }
     if (f.size > 512 * 1024) { toast.error("Entry file too large (max 512KB)"); return; }
+    const rel = (f as any).webkitRelativePath as string | undefined;
+    const suggested = rel && rel.includes("/") ? rel : f.name;
+    const input = window.prompt("Save uploaded entry as (folder/file allowed):", suggested) ?? "";
+    const path = input.trim().replace(/^\.?\/+/, "");
+    if (!path || !/\.(tsx|jsx|ts|js)$/.test(path)) { toast.error("Invalid path"); return; }
     const r = new FileReader();
     r.onload = () => {
       const text = String(r.result ?? "");
-      const path = f.name.replace(/^\.?\/+/, "");
       const next = { ...currentFiles, [path]: text };
       setActiveFiles(next);
       setEntryPath(path);
