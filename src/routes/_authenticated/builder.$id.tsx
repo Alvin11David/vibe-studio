@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
+import { FolderTreePicker } from "@/components/FolderTreePicker";
 import ReactMarkdown from "react-markdown";
 
 export const Route = createFileRoute("/_authenticated/builder/$id")({
@@ -78,6 +79,7 @@ function Builder() {
   const [healthError, setHealthError] = useState<string>("");
   const [previewKey, setPreviewKey] = useState(0);
   const [pendingFolder, setPendingFolder] = useState<string>("");
+  const [folderPickerOpen, setFolderPickerOpen] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
 
   const generate = useServerFn(generateProject);
@@ -326,39 +328,17 @@ function Builder() {
     return cleaned;
   };
 
-  const onNewFolder = () => {
-    const input = window.prompt(
-      "New folder (e.g. src/components). Slashes create nested folders. Your next upload will save here.",
-      pendingFolder || "src/components",
-    );
-    if (input === null) return;
-    if (!input.trim()) { setPendingFolder(""); toast.success("Cleared target folder"); return; }
-    const folder = sanitizePath(input);
-    if (!folder) { toast.error("Invalid folder name"); return; }
-    setPendingFolder(folder);
-    toast.success(`Next upload → ${folder}/`);
-  };
-
   const onUploadEntry = (f: File | null) => {
     if (!f) return;
     if (!/\.(tsx|jsx|ts|js)$/.test(f.name)) { toast.error("Entry must be .tsx/.jsx/.ts/.js"); return; }
     if (f.size > 512 * 1024) { toast.error("Entry file too large (max 512KB)"); return; }
+    const safeName = sanitizePath(f.name);
+    if (!safeName) { toast.error("Unsupported filename"); return; }
     const rel = (f as any).webkitRelativePath as string | undefined;
-    const suggested = pendingFolder
-      ? `${pendingFolder}/${f.name}`
-      : rel && rel.includes("/")
-        ? rel
-        : f.name;
-    const input = window.prompt(
-      "Save uploaded entry as (use slashes to create folders, e.g. src/components/Button.tsx):",
-      suggested,
-    );
-    if (input === null) return;
-    const path = sanitizePath(input);
-    if (!path || !/\.(tsx|jsx|ts|js)$/.test(path)) {
-      toast.error("Invalid path. Use letters, numbers, . _ - and / only.");
-      return;
-    }
+    const relPath = rel && rel.includes("/") ? sanitizePath(rel) : null;
+    const path = pendingFolder
+      ? `${pendingFolder}/${safeName}`
+      : relPath ?? safeName;
     const r = new FileReader();
     r.onload = () => {
       const text = String(r.result ?? "");
@@ -367,7 +347,7 @@ function Builder() {
       setEntryPath(path);
       setPendingFolder("");
       const folder = path.includes("/") ? path.slice(0, path.lastIndexOf("/")) : "(root)";
-      toast.success(`Loaded entry: ${path}${folder !== "(root)" ? ` (created ${folder}/)` : ""}`);
+      toast.success(`Loaded entry: ${path}${folder !== "(root)" ? ` in ${folder}/` : ""}`);
     };
     r.readAsText(f);
   };
@@ -500,14 +480,34 @@ function Builder() {
               <Upload className="h-3 w-3" /> Upload
               <input type="file" accept=".tsx,.jsx,.ts,.js" className="hidden" onChange={(e) => { onUploadEntry(e.target.files?.[0] ?? null); e.target.value = ""; }} />
             </label>
-            <button
-              type="button"
-              onClick={onNewFolder}
-              className={`flex items-center gap-1 rounded border px-2 py-1 ${pendingFolder ? "border-gold/40 text-gold" : "border-gold/15 text-muted-foreground hover:border-gold/40 hover:text-gold"}`}
-              title="Set a destination folder for the next upload"
-            >
-              <FolderPlus className="h-3 w-3" /> {pendingFolder ? `→ ${pendingFolder}/` : "New folder"}
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setFolderPickerOpen((v) => !v)}
+                className={`flex items-center gap-1 rounded border px-2 py-1 ${pendingFolder ? "border-gold/40 text-gold" : "border-gold/15 text-muted-foreground hover:border-gold/40 hover:text-gold"}`}
+                title="Pick or create a destination folder for the next upload"
+              >
+                <FolderPlus className="h-3 w-3" /> {pendingFolder ? `→ ${pendingFolder}/` : "Folder"}
+              </button>
+              {folderPickerOpen && (
+                <FolderTreePicker
+                  filePaths={Object.keys(currentFiles)}
+                  selected={pendingFolder}
+                  onSelect={(f) => setPendingFolder(f)}
+                  onClose={() => setFolderPickerOpen(false)}
+                />
+              )}
+            </div>
+            {pendingFolder && (
+              <button
+                type="button"
+                onClick={() => setPendingFolder("")}
+                className="rounded border border-gold/15 px-1.5 py-1 text-[11px] text-muted-foreground hover:border-gold/40 hover:text-gold"
+                title="Clear folder target"
+              >
+                Clear
+              </button>
+            )}
             <div className="ml-1 truncate text-[10px] uppercase tracking-widest text-muted-foreground">
               Resolved: <span className="font-mono text-gold-soft">{resolvedEntry ?? "—"}</span>
             </div>
