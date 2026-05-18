@@ -1,5 +1,6 @@
 // In-browser bundler that compiles a virtual file tree (TSX/TS/JS/JSX/CSS)
-// into a single ESM bundle. React/ReactDOM/lucide-react are externalized to esm.sh.
+// into a single ESM bundle. React/ReactDOM/lucide-react are externalized via
+// an iframe import map.
 import type { ProjectFiles } from "./project-files";
 
 let initPromise: Promise<typeof import("esbuild-wasm")> | null = null;
@@ -16,7 +17,6 @@ async function getEsbuild() {
           worker: true,
         });
       } catch (err: any) {
-        // initialize() throws if called twice — ignore.
         if (!String(err?.message || "").includes("initialize")) throw err;
       }
       return esbuild;
@@ -62,20 +62,50 @@ function loaderFor(path: string): "tsx" | "ts" | "jsx" | "js" | "css" {
   return "js";
 }
 
+export interface FailedImport {
+  specifier: string;
+  importer: string;
+  kind: "missing-file" | "missing-package";
+  suggestion: string;
+}
+
 export interface BundleResult {
   code: string;
   errors: string[];
+  resolvedEntry: string | null;
+  failedImports: FailedImport[];
 }
 
-export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResult> {
+const ENTRY_CANDIDATES = ["App.tsx", "App.jsx", "App.ts", "App.js", "app.tsx", "src/App.tsx"];
+
+function pickEntry(files: ProjectFiles, requested?: string): string | null {
+  if (requested && files[normalizePath(requested)] != null) return normalizePath(requested);
+  for (const c of ENTRY_CANDIDATES) if (files[c] != null) return c;
+  // Fallback: first .tsx/.jsx file with a default export
+  for (const [k, v] of Object.entries(files)) {
+    if (/\.(tsx|jsx)$/.test(k) && /export\s+default/.test(v)) return k;
+  }
+  return null;
+}
+
+export async function bundleProject(rawFiles: ProjectFiles, entry?: string): Promise<BundleResult> {
   const files: ProjectFiles = {};
   for (const [k, v] of Object.entries(rawFiles)) files[normalizePath(k)] = v;
 
-  if (!files["App.tsx"] && !files["App.jsx"] && !files["App.js"] && !files["App.ts"]) {
-    return { code: "", errors: ["Missing App.tsx entry file."] };
+  const resolvedEntry = pickEntry(files, entry);
+  if (!resolvedEntry) {
+    return {
+      code: "",
+      resolvedEntry: null,
+      failedImports: [],
+      errors: [
+        "No entry file found. Expected one of: App.tsx, App.jsx, App.ts, App.js. Use the entry picker to choose or upload one.",
+      ],
+    };
   }
 
   const esbuild = await getEsbuild();
+  const failedImports: FailedImport[] = [];
 
   const virtualPlugin = {
     name: "virtual-fs",
@@ -89,9 +119,21 @@ export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResul
         if (args.path.startsWith(".")) {
           const resolved = resolveImport(args.importer, args.path, files);
           if (resolved) return { path: resolved, namespace: "vfs" };
+          failedImports.push({
+            specifier: args.path,
+            importer: args.importer,
+            kind: "missing-file",
+            suggestion: `File "${args.path}" is missing in the project. Ask the AI to create it, or upload it as an entry file.`,
+          });
           return { errors: [{ text: `Cannot resolve "${args.path}" from "${args.importer}"` }] };
         }
         // bare import not in externals — proxy through esm.sh as best effort
+        failedImports.push({
+          specifier: args.path,
+          importer: args.importer,
+          kind: "missing-package",
+          suggestion: `Package "${args.path}" isn't in the preview's import map. Stick to react, react-dom, lucide-react, or relative files for reliable previews.`,
+        });
         return { path: `https://esm.sh/${args.path}?dev&external=react,react-dom`, external: true };
       });
       build.onLoad({ filter: /.*/, namespace: "vfs" }, (args: any) => {
@@ -104,7 +146,7 @@ export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResul
 
   try {
     const result = await esbuild.build({
-      entryPoints: ["App.tsx"],
+      entryPoints: [resolvedEntry],
       bundle: true,
       format: "esm",
       jsx: "automatic",
@@ -116,19 +158,18 @@ export async function bundleProject(rawFiles: ProjectFiles): Promise<BundleResul
     });
     const out = result.outputFiles?.[0]?.text ?? "";
     const errors = result.errors.map((e) => e.text);
-    return { code: out, errors };
+    return { code: out, errors, resolvedEntry, failedImports };
   } catch (e: any) {
     const msgs: string[] = [];
     if (e?.errors?.length) for (const er of e.errors) msgs.push(er.text);
     else msgs.push(e?.message ?? String(e));
-    return { code: "", errors: msgs };
+    return { code: "", errors: msgs, resolvedEntry, failedImports };
   }
 }
 
 export function buildPreviewSrcDoc(bundleCode: string, opts: { visualEdit: boolean; customCss?: string }) {
   const visualEditScript = opts.visualEdit ? VISUAL_EDIT_RUNTIME : "";
   const css = opts.customCss ?? "";
-  // The bundle is injected as a Blob URL so syntax errors don't break the doc parser.
   return `<!doctype html>
 <html lang="en" class="dark">
 <head>
@@ -153,22 +194,22 @@ export function buildPreviewSrcDoc(bundleCode: string, opts: { visualEdit: boole
 </head>
 <body>
 <div id="root"></div>
-<div id="aurum-error" style="position:fixed;inset:auto 0 0 0;display:none;background:#3b0d0d;color:#ffd9d9;padding:14px 18px;font:12px/1.5 ui-monospace,monospace;border-top:2px solid #ef4444;max-height:40vh;overflow:auto;white-space:pre-wrap;z-index:99999"></div>
 <script type="module">
-const showErr = (msg) => { const el=document.getElementById('aurum-error'); if(el){el.textContent=String(msg); el.style.display='block';} };
-window.addEventListener('error',(e)=>showErr(e.error?.stack||e.message));
-window.addEventListener('unhandledrejection',(e)=>showErr(e.reason?.stack||e.reason));
+const post = (type, payload) => { try { parent.postMessage({ type, ...(payload||{}) }, '*'); } catch {} };
+window.addEventListener('error',(e)=>post('aurum:error',{message:e.error?.stack||e.message}));
+window.addEventListener('unhandledrejection',(e)=>post('aurum:error',{message:e.reason?.stack||String(e.reason)}));
 try {
   const blob = new Blob([${JSON.stringify(bundleCode)}], { type: 'text/javascript' });
   const url = URL.createObjectURL(blob);
   const mod = await import(url);
-  const React = await import('https://esm.sh/react@19?dev');
-  const { createRoot } = await import('https://esm.sh/react-dom@19/client?dev&external=react');
+  const React = await import('react');
+  const { createRoot } = await import('react-dom/client');
   const App = mod.default;
-  if (!App) throw new Error('App.tsx must export default');
+  if (!App) throw new Error('Entry file must export default a React component');
   createRoot(document.getElementById('root')).render(React.createElement(App));
+  post('aurum:ready');
   ${visualEditScript}
-} catch (e) { showErr(e?.stack || e?.message || String(e)); }
+} catch (e) { post('aurum:error', { message: e?.stack || e?.message || String(e) }); }
 </script>
 </body></html>`;
 }
