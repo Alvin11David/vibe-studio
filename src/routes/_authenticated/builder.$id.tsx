@@ -128,27 +128,46 @@ function Builder() {
     })();
   }, [id]);
 
-  // Bundle whenever activeFiles changes
+  // Bundle whenever activeFiles or entryPath changes
   useEffect(() => {
     if (!activeFiles || Object.keys(activeFiles).length === 0) return;
     let cancelled = false;
     (async () => {
       setBundling(true);
-      const { code, errors } = await bundleProject(activeFiles);
+      const { code, errors, resolvedEntry, failedImports } = await bundleProject(activeFiles, entryPath);
       if (cancelled) return;
       setBundleCode(code);
       setBundleErrors(errors);
+      setFailedImports(failedImports);
+      setResolvedEntry(resolvedEntry);
       setBundling(false);
     })();
     return () => { cancelled = true; };
-  }, [activeFiles]);
+  }, [activeFiles, entryPath]);
 
-  // Visual-edit message bridge
+  // Iframe health check: wait for aurum:ready, otherwise mark timeout
+  useEffect(() => {
+    if (!bundleCode) { setHealthState("idle"); return; }
+    setHealthState("loading");
+    setHealthError("");
+    const timer = window.setTimeout(() => {
+      setHealthState((s) => (s === "loading" ? "timeout" : s));
+    }, 6000);
+    return () => window.clearTimeout(timer);
+  }, [bundleCode, previewKey]);
+
+  // Visual-edit + health-check message bridge
   useEffect(() => {
     function onMsg(e: MessageEvent) {
-      if (e.data?.type === "aurum:select" && editMode) {
+      const t = e.data?.type;
+      if (t === "aurum:select" && editMode) {
         setSelection({ tag: e.data.tag, outerHtml: e.data.outerHtml, text: e.data.text });
         setEditMode(false);
+      } else if (t === "aurum:ready") {
+        setHealthState("ready");
+      } else if (t === "aurum:error") {
+        setHealthState("error");
+        setHealthError(String(e.data.message ?? "Unknown preview error"));
       }
     }
     window.addEventListener("message", onMsg);
