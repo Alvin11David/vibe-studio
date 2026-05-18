@@ -480,14 +480,34 @@ function Builder() {
               <Upload className="h-3 w-3" /> Upload
               <input type="file" accept=".tsx,.jsx,.ts,.js" className="hidden" onChange={(e) => { onUploadEntry(e.target.files?.[0] ?? null); e.target.value = ""; }} />
             </label>
-            <button
-              type="button"
-              onClick={onNewFolder}
-              className={`flex items-center gap-1 rounded border px-2 py-1 ${pendingFolder ? "border-gold/40 text-gold" : "border-gold/15 text-muted-foreground hover:border-gold/40 hover:text-gold"}`}
-              title="Set a destination folder for the next upload"
-            >
-              <FolderPlus className="h-3 w-3" /> {pendingFolder ? `→ ${pendingFolder}/` : "New folder"}
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setFolderPickerOpen((v) => !v)}
+                className={`flex items-center gap-1 rounded border px-2 py-1 ${pendingFolder ? "border-gold/40 text-gold" : "border-gold/15 text-muted-foreground hover:border-gold/40 hover:text-gold"}`}
+                title="Pick or create a destination folder for the next upload"
+              >
+                <FolderPlus className="h-3 w-3" /> {pendingFolder ? `→ ${pendingFolder}/` : "Folder"}
+              </button>
+              {folderPickerOpen && (
+                <FolderTreePicker
+                  filePaths={Object.keys(currentFiles)}
+                  selected={pendingFolder}
+                  onSelect={(f) => setPendingFolder(f)}
+                  onClose={() => setFolderPickerOpen(false)}
+                />
+              )}
+            </div>
+            {pendingFolder && (
+              <button
+                type="button"
+                onClick={() => setPendingFolder("")}
+                className="rounded border border-gold/15 px-1.5 py-1 text-[11px] text-muted-foreground hover:border-gold/40 hover:text-gold"
+                title="Clear folder target"
+              >
+                Clear
+              </button>
+            )}
             <div className="ml-1 truncate text-[10px] uppercase tracking-widest text-muted-foreground">
               Resolved: <span className="font-mono text-gold-soft">{resolvedEntry ?? "—"}</span>
             </div>
