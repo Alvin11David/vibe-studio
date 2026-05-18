@@ -419,20 +419,116 @@ function Builder() {
           </div>
         </aside>
 
-        <section className={`${mobilePane === "preview" ? "block" : "hidden"} relative bg-noir lg:block`}>
+        <section className={`${mobilePane === "preview" ? "block" : "hidden"} relative flex flex-col bg-noir lg:flex`}>
+          {/* Entry / preview toolbar */}
+          <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gold/10 bg-onyx/40 px-3 py-2 text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <FileCode className="h-3 w-3 text-gold" /> Entry:
+            </div>
+            <select
+              value={entryPath}
+              onChange={(e) => setEntryPath(e.target.value)}
+              className="rounded border border-gold/15 bg-onyx px-2 py-1 text-xs text-gold-soft outline-none focus:border-gold/40"
+            >
+              {entryCandidates.length === 0 && <option value="App.tsx">App.tsx</option>}
+              {entryCandidates.map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            <label className="flex cursor-pointer items-center gap-1 rounded border border-gold/15 px-2 py-1 text-muted-foreground hover:border-gold/40 hover:text-gold">
+              <Upload className="h-3 w-3" /> Upload
+              <input type="file" accept=".tsx,.jsx,.ts,.js" className="hidden" onChange={(e) => onUploadEntry(e.target.files?.[0] ?? null)} />
+            </label>
+            <div className="ml-1 truncate text-[10px] uppercase tracking-widest text-muted-foreground">
+              Resolved: <span className="font-mono text-gold-soft">{resolvedEntry ?? "—"}</span>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              {(bundleErrors.length > 0 || failedImports.length > 0 || healthState === "error" || healthState === "timeout") && (
+                <button
+                  onClick={() => setShowDebug((v) => !v)}
+                  className="flex items-center gap-1 rounded border border-red-500/40 bg-red-950/40 px-2 py-1 text-[11px] text-red-200 hover:bg-red-950/60"
+                >
+                  <AlertTriangle className="h-3 w-3" />
+                  {failedImports.length + bundleErrors.length} issue{(failedImports.length + bundleErrors.length) === 1 ? "" : "s"}
+                </button>
+              )}
+              <button
+                onClick={retryPreview}
+                className="flex items-center gap-1 rounded border border-gold/15 px-2 py-1 text-[11px] text-muted-foreground hover:border-gold/40 hover:text-gold"
+                title="Reload preview"
+              >
+                <RefreshCw className="h-3 w-3" /> Retry
+              </button>
+            </div>
+          </div>
+
           {view === "preview" ? (
-            <div className="relative h-full w-full">
+            <div className="relative flex-1">
               {bundling && (
                 <div className="absolute right-3 top-3 z-10 flex items-center gap-2 rounded-md bg-onyx/90 px-3 py-1.5 text-xs text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" /> Bundling…
                 </div>
               )}
-              {bundleErrors.length > 0 && !bundling && (
-                <div className="absolute inset-x-3 top-3 z-10 max-h-40 overflow-auto rounded-md border border-red-500/40 bg-red-950/90 p-3 font-mono text-xs text-red-200">
-                  {bundleErrors.join("\n")}
+
+              {/* Debug panel */}
+              {showDebug && (bundleErrors.length > 0 || failedImports.length > 0) && (
+                <div className="absolute inset-x-3 top-3 z-20 max-h-[55%] overflow-auto rounded-md border border-red-500/40 bg-red-950/95 p-3 text-xs text-red-100 shadow-xl">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 font-semibold uppercase tracking-widest"><AlertTriangle className="h-3 w-3" /> Debug</div>
+                    <button onClick={() => setShowDebug(false)} className="text-red-200/70 hover:text-red-100">×</button>
+                  </div>
+                  {failedImports.length > 0 && (
+                    <div className="mb-3">
+                      <div className="mb-1 text-[10px] uppercase tracking-widest text-red-200/70">Failed imports</div>
+                      <ul className="space-y-2">
+                        {failedImports.map((fi, i) => (
+                          <li key={i} className="rounded bg-red-900/40 p-2">
+                            <div className="font-mono">
+                              <span className="text-red-100">{fi.specifier}</span>
+                              <span className="text-red-300/70"> ← {fi.importer}</span>
+                            </div>
+                            <div className="mt-1 text-red-200/90">{fi.suggestion}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {bundleErrors.length > 0 && (
+                    <div>
+                      <div className="mb-1 text-[10px] uppercase tracking-widest text-red-200/70">Bundler errors</div>
+                      <pre className="whitespace-pre-wrap font-mono text-[11px]">{bundleErrors.join("\n")}</pre>
+                    </div>
+                  )}
                 </div>
               )}
+
+              {/* Health-check fallback UI */}
+              {!bundling && (healthState === "error" || healthState === "timeout") && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-noir/95 p-6">
+                  <div className="max-w-md rounded-xl border border-red-500/40 bg-onyx p-5 text-center">
+                    <AlertTriangle className="mx-auto h-7 w-7 text-red-400" />
+                    <h3 className="mt-3 font-display text-lg">
+                      {healthState === "timeout" ? "Preview didn't load in time" : "Preview crashed"}
+                    </h3>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {healthState === "timeout"
+                        ? "The iframe didn't signal ready. A module may have failed to resolve or the bundle is too large."
+                        : (healthError || "An error occurred while running the bundle.")}
+                    </p>
+                    <div className="mt-4 flex justify-center gap-2">
+                      <button onClick={retryPreview} className="flex items-center gap-1.5 rounded-md bg-gradient-gold px-3 py-1.5 text-xs text-ink">
+                        <RefreshCw className="h-3 w-3" /> Retry
+                      </button>
+                      <button onClick={() => setShowDebug(true)} className="flex items-center gap-1.5 rounded-md border border-gold/20 px-3 py-1.5 text-xs text-muted-foreground hover:text-gold">
+                        <AlertTriangle className="h-3 w-3" /> Show debug
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <iframe
+                key={previewKey}
                 srcDoc={srcDoc}
                 title="preview"
                 className="h-full w-full border-0 bg-white"
@@ -442,7 +538,7 @@ function Builder() {
               />
             </div>
           ) : (
-            <div className="grid h-full grid-cols-[200px_1fr] overflow-hidden">
+            <div className="grid flex-1 grid-cols-[200px_1fr] overflow-hidden">
               <div className="overflow-y-auto border-r border-gold/10 bg-onyx/60 p-2">
                 {filesList.map(([name]) => (
                   <button
