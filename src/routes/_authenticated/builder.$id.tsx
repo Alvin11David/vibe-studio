@@ -448,9 +448,13 @@ function Builder() {
               onChange={(e) => setEntryPath(e.target.value)}
               className="rounded border border-gold/15 bg-onyx px-2 py-1 text-xs text-gold-soft outline-none focus:border-gold/40"
             >
-              {entryCandidates.length === 0 && <option value="App.tsx">App.tsx</option>}
-              {entryCandidates.map((n) => (
-                <option key={n} value={n}>{n}</option>
+              {entryGroups.length === 0 && <option value="App.tsx">App.tsx</option>}
+              {entryGroups.map(([dir, paths]) => (
+                <optgroup key={dir} label={dir}>
+                  {paths.map((n) => (
+                    <option key={n} value={n}>{dir === "(root)" ? n : n.slice(dir.length + 1)}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
             <label className="flex cursor-pointer items-center gap-1 rounded border border-gold/15 px-2 py-1 text-muted-foreground hover:border-gold/40 hover:text-gold">
