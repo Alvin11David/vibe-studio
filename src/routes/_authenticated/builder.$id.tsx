@@ -7,7 +7,7 @@ import {
   restoreVersion,
   ensureProjectFiles,
 } from "@/lib/ai-builder.functions";
-import { bundleProject, buildPreviewSrcDoc } from "@/lib/bundler";
+import { bundleProject, buildPreviewSrcDoc, type FailedImport } from "@/lib/bundler";
 import type { ProjectFiles } from "@/lib/project-files";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,10 @@ import {
   RotateCcw,
   MousePointerClick,
   ChevronDown,
+  AlertTriangle,
+  RefreshCw,
+  Upload,
+  FileCode,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
@@ -65,7 +69,14 @@ function Builder() {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [bundleCode, setBundleCode] = useState("");
   const [bundleErrors, setBundleErrors] = useState<string[]>([]);
+  const [failedImports, setFailedImports] = useState<FailedImport[]>([]);
+  const [resolvedEntry, setResolvedEntry] = useState<string | null>(null);
+  const [entryPath, setEntryPath] = useState<string>("App.tsx");
   const [bundling, setBundling] = useState(false);
+  const [healthState, setHealthState] = useState<"idle" | "loading" | "ready" | "error" | "timeout">("idle");
+  const [healthError, setHealthError] = useState<string>("");
+  const [previewKey, setPreviewKey] = useState(0);
+  const [showDebug, setShowDebug] = useState(false);
 
   const generate = useServerFn(generateProject);
   const restore = useServerFn(restoreVersion);
