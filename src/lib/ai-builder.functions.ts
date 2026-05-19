@@ -128,17 +128,30 @@ export const generateProject = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Response("AI not configured", { status: 500 });
 
+    // Heuristic: complex/long requests get the bigger model, which has higher output token ceilings.
+    const lastUser = typeof data.message === "string" ? data.message : "";
+    const isComplex =
+      !!data.imageDataUrl ||
+      lastUser.length > 400 ||
+      /landing|pricing|dashboard|sections?|multi|faq|footer|hero|grid|accordion/i.test(lastUser);
+
+    const callModel = async (model: string) => {
+      return fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages,
+          tools: [FILES_TOOL],
+          tool_choice: { type: "function", function: { name: "emit_project" } },
+          max_tokens: 16000,
+        }),
+      });
+    };
+
     const startedAt = Date.now();
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: data.imageDataUrl ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash",
-        messages,
-        tools: [FILES_TOOL],
-        tool_choice: { type: "function", function: { name: "emit_project" } },
-      }),
-    });
+    let chosenModel = isComplex ? "google/gemini-2.5-pro" : "google/gemini-2.5-flash";
+    let res = await callModel(chosenModel);
 
     if (res.status === 429)
       return { error: "rate_limit" as const, message: "Too many requests. Please wait a moment." };
@@ -149,35 +162,51 @@ export const generateProject = createServerFn({ method: "POST" })
       return { error: "ai_error" as const, message: "AI temporarily unavailable." };
     }
 
-    const json: any = await res.json();
+    const parseResponse = (json: any) => {
+      const choice = json.choices?.[0];
+      const call = choice?.message?.tool_calls?.[0];
+      const finish = choice?.finish_reason;
+      let summary = "Updated your app.";
+      let files: ProjectFiles = {};
+      try {
+        const parsed = JSON.parse(call?.function?.arguments ?? "{}");
+        summary = String(parsed.summary || summary);
+        const raw = (parsed.files || {}) as Record<string, unknown>;
+        for (const [k, v] of Object.entries(raw)) {
+          if (typeof v !== "string") continue;
+          let path = k.replace(/^\.\//, "").replace(/^\/+/, "");
+          if (path.startsWith("src/")) path = path.slice(4);
+          files[path] = v;
+        }
+      } catch (e) {
+        console.error("Failed to parse tool args", e, "finish:", finish);
+      }
+      if (!files["App.tsx"]) {
+        const alias = ["app.tsx", "App.jsx", "app.jsx", "App.ts", "index.tsx", "Index.tsx", "main.tsx"]
+          .find((k) => files[k]);
+        if (alias) {
+          files["App.tsx"] = files[alias];
+          delete files[alias];
+        }
+      }
+      return { summary, files, finish, call };
+    };
+
+    let json: any = await res.json();
+    let { summary, files, finish, call } = parseResponse(json);
+
+    // Retry once with Pro (higher output ceiling) if Flash truncated or missed App.tsx.
+    if (!files["App.tsx"] && chosenModel !== "google/gemini-2.5-pro") {
+      console.warn("Retrying with gemini-2.5-pro. finish:", finish, "keys:", Object.keys(files));
+      chosenModel = "google/gemini-2.5-pro";
+      res = await callModel(chosenModel);
+      if (res.ok) {
+        json = await res.json();
+        ({ summary, files, finish, call } = parseResponse(json));
+      }
+    }
+
     const thoughtMs = Date.now() - startedAt;
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    let summary = "Updated your app.";
-    let files: ProjectFiles = {};
-    try {
-      const parsed = JSON.parse(call?.function?.arguments ?? "{}");
-      summary = String(parsed.summary || summary);
-      const raw = (parsed.files || {}) as Record<string, unknown>;
-      // Normalize paths: strip leading "./" or "/", drop "src/" prefix, coerce values to strings.
-      for (const [k, v] of Object.entries(raw)) {
-        if (typeof v !== "string") continue;
-        let path = k.replace(/^\.\//, "").replace(/^\/+/, "");
-        if (path.startsWith("src/")) path = path.slice(4);
-        files[path] = v;
-      }
-    } catch (e) {
-      console.error("Failed to parse tool args", e);
-      return { error: "ai_error" as const, message: "AI returned malformed output. Try again." };
-    }
-    // Accept common App entry variants and alias to App.tsx.
-    if (!files["App.tsx"]) {
-      const alias = ["app.tsx", "App.jsx", "app.jsx", "App.ts", "index.tsx", "Index.tsx", "main.tsx"]
-        .find((k) => files[k]);
-      if (alias) {
-        files["App.tsx"] = files[alias];
-        delete files[alias];
-      }
-    }
     if (!files["App.tsx"]) {
       console.error("AI did not return App.tsx. Keys:", Object.keys(files), "raw call:", JSON.stringify(call).slice(0, 800));
       return { error: "ai_error" as const, message: "AI did not return App.tsx. Try again." };
