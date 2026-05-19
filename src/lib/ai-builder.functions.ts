@@ -157,12 +157,29 @@ export const generateProject = createServerFn({ method: "POST" })
     try {
       const parsed = JSON.parse(call?.function?.arguments ?? "{}");
       summary = String(parsed.summary || summary);
-      files = (parsed.files || {}) as ProjectFiles;
+      const raw = (parsed.files || {}) as Record<string, unknown>;
+      // Normalize paths: strip leading "./" or "/", drop "src/" prefix, coerce values to strings.
+      for (const [k, v] of Object.entries(raw)) {
+        if (typeof v !== "string") continue;
+        let path = k.replace(/^\.\//, "").replace(/^\/+/, "");
+        if (path.startsWith("src/")) path = path.slice(4);
+        files[path] = v;
+      }
     } catch (e) {
       console.error("Failed to parse tool args", e);
       return { error: "ai_error" as const, message: "AI returned malformed output. Try again." };
     }
+    // Accept common App entry variants and alias to App.tsx.
     if (!files["App.tsx"]) {
+      const alias = ["app.tsx", "App.jsx", "app.jsx", "App.ts", "index.tsx", "Index.tsx", "main.tsx"]
+        .find((k) => files[k]);
+      if (alias) {
+        files["App.tsx"] = files[alias];
+        delete files[alias];
+      }
+    }
+    if (!files["App.tsx"]) {
+      console.error("AI did not return App.tsx. Keys:", Object.keys(files), "raw call:", JSON.stringify(call).slice(0, 800));
       return { error: "ai_error" as const, message: "AI did not return App.tsx. Try again." };
     }
 
