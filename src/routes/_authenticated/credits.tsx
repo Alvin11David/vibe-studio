@@ -189,3 +189,25 @@ function StatCard({ label, value, sub, icon: Icon, highlight }: { label: string;
     </div>
   );
 }
+
+function TopUpButton({ onDone }: { onDone: (newPaid: number) => void }) {
+  const topUp = useServerFn(topUpCredits);
+  const [loading, setLoading] = useState(false);
+  const handle = async () => {
+    setLoading(true);
+    try {
+      const res = await topUp({ data: { amount: 50 } });
+      onDone(res.paid_credits);
+      toast.success("Added 50 credits to your account");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Top-up failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <Button onClick={handle} disabled={loading} variant="outline" className="border-gold/40 text-gold hover:bg-gold/10">
+      <Coins className="mr-2 h-4 w-4" /> {loading ? "Adding…" : "Top up +50 (test)"}
+    </Button>
+  );
+}
