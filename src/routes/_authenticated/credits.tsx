@@ -83,9 +83,12 @@ function CreditsPage() {
           <h1 className="mt-2 font-display text-5xl">Credit history</h1>
           <p className="mt-2 text-muted-foreground">Every grant, purchase, and generation — accounted for.</p>
         </div>
-        <Button asChild className="bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
-          <Link to="/pricing"><Sparkles className="mr-2 h-4 w-4" /> Buy credits</Link>
-        </Button>
+        <div className="flex gap-2">
+          <TopUpButton onDone={(newPaid) => setCredits((c) => ({ free: c?.free ?? 0, paid: newPaid }))} />
+          <Button asChild className="bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
+            <Link to="/pricing"><Sparkles className="mr-2 h-4 w-4" /> Buy credits</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stat cards */}
