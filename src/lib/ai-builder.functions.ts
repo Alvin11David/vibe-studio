@@ -8,8 +8,9 @@ const SYSTEM_PROMPT = `You are Aurum, an elite AI app builder. You build REAL, w
 
 OUTPUT CONTRACT — call the "emit_project" tool exactly once with:
 - summary: ONE short imperative line (e.g. "Added drag-and-drop kanban with localStorage").
-- files: object mapping file path -> file source. Required entry: "App.tsx" exporting default a React component.
+- files: an ARRAY of {path, content} objects. MUST include at least one entry with path="App.tsx" that default-exports a React component.
 - Optional files: any "components/Whatever.tsx", "hooks/useThing.ts", "lib/foo.ts", and a single optional "index.css".
+- Every file you emit must contain real, complete source code in its "content" field. Never emit empty files or placeholders.
 
 BUILD REAL APPS, NOT MOCKUPS:
 - Wire up real state with useState/useReducer/useEffect/useMemo/useRef/useContext.
@@ -48,22 +49,30 @@ const FILES_TOOL = {
   type: "function" as const,
   function: {
     name: "emit_project",
-    description: "Emit the complete multi-file React project for the user request.",
+    description: "Emit the complete multi-file React project for the user request. The 'files' array MUST contain at least one entry whose path is 'App.tsx'.",
     parameters: {
       type: "object",
       properties: {
         summary: { type: "string", description: "One short line describing what changed." },
         files: {
-          type: "object",
-          description: "Map of file path to source code. Must include 'App.tsx'.",
-          additionalProperties: { type: "string" },
+          type: "array",
+          description: "List of source files. MUST include an entry with path='App.tsx' that default-exports a React component.",
+          minItems: 1,
+          items: {
+            type: "object",
+            properties: {
+              path: { type: "string", description: "Relative file path, e.g. 'App.tsx' or 'components/Button.tsx'." },
+              content: { type: "string", description: "Full source code for the file." },
+            },
+            required: ["path", "content"],
+          },
         },
       },
       required: ["summary", "files"],
-      additionalProperties: false,
     },
   },
 };
+
 
 export const generateProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -179,12 +188,17 @@ export const generateProject = createServerFn({ method: "POST" })
       try {
         const parsed = JSON.parse(call?.function?.arguments ?? "{}");
         summary = String(parsed.summary || summary);
-        const raw = (parsed.files || {}) as Record<string, unknown>;
-        for (const [k, v] of Object.entries(raw)) {
-          if (typeof v !== "string") continue;
-          let path = k.replace(/^\.\//, "").replace(/^\/+/, "");
+        const rawList = Array.isArray(parsed.files)
+          ? parsed.files
+          : Object.entries(parsed.files ?? {}).map(([path, content]) => ({ path, content }));
+        for (const entry of rawList) {
+          if (!entry || typeof entry !== "object") continue;
+          const p = (entry as any).path;
+          const c = (entry as any).content;
+          if (typeof p !== "string" || typeof c !== "string") continue;
+          let path = p.replace(/^\.\//, "").replace(/^\/+/, "");
           if (path.startsWith("src/")) path = path.slice(4);
-          files[path] = v;
+          files[path] = c;
         }
       } catch (e) {
         console.error("Failed to parse tool args", e, "finish:", finish);
@@ -197,6 +211,7 @@ export const generateProject = createServerFn({ method: "POST" })
           delete files[alias];
         }
       }
+
       return { summary, files, finish, call };
     };
 

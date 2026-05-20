@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Coins, TrendingUp, TrendingDown, Sparkles, Calendar, ShoppingBag, Zap } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { useServerFn } from "@tanstack/react-start";
+import { topUpCredits } from "@/lib/credits.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/credits")({
   component: CreditsPage,
@@ -80,9 +83,12 @@ function CreditsPage() {
           <h1 className="mt-2 font-display text-5xl">Credit history</h1>
           <p className="mt-2 text-muted-foreground">Every grant, purchase, and generation — accounted for.</p>
         </div>
-        <Button asChild className="bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
-          <Link to="/pricing"><Sparkles className="mr-2 h-4 w-4" /> Buy credits</Link>
-        </Button>
+        <div className="flex gap-2">
+          <TopUpButton onDone={(newPaid) => setCredits((c) => ({ free: c?.free ?? 0, paid: newPaid }))} />
+          <Button asChild className="bg-gradient-gold text-ink hover:opacity-90 shadow-gold">
+            <Link to="/pricing"><Sparkles className="mr-2 h-4 w-4" /> Buy credits</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stat cards */}
@@ -181,5 +187,27 @@ function StatCard({ label, value, sub, icon: Icon, highlight }: { label: string;
       <div className={`mt-3 font-display text-4xl ${highlight ? "text-gradient-gold" : ""}`}>{value}</div>
       <div className="mt-1 text-xs text-muted-foreground">{sub}</div>
     </div>
+  );
+}
+
+function TopUpButton({ onDone }: { onDone: (newPaid: number) => void }) {
+  const topUp = useServerFn(topUpCredits);
+  const [loading, setLoading] = useState(false);
+  const handle = async () => {
+    setLoading(true);
+    try {
+      const res = await topUp({ data: { amount: 50 } });
+      onDone(res.paid_credits);
+      toast.success("Added 50 credits to your account");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Top-up failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <Button onClick={handle} disabled={loading} variant="outline" className="border-gold/40 text-gold hover:bg-gold/10">
+      <Coins className="mr-2 h-4 w-4" /> {loading ? "Adding…" : "Top up +50 (test)"}
+    </Button>
   );
 }
