@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Coins, TrendingUp, TrendingDown, Sparkles, Calendar, ShoppingBag, Zap } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { useServerFn } from "@tanstack/react-start";
+import { topUpCredits } from "@/lib/credits.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/credits")({
   component: CreditsPage,
