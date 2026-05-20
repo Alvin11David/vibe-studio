@@ -48,22 +48,30 @@ const FILES_TOOL = {
   type: "function" as const,
   function: {
     name: "emit_project",
-    description: "Emit the complete multi-file React project for the user request.",
+    description: "Emit the complete multi-file React project for the user request. The 'files' array MUST contain at least one entry whose path is 'App.tsx'.",
     parameters: {
       type: "object",
       properties: {
         summary: { type: "string", description: "One short line describing what changed." },
         files: {
-          type: "object",
-          description: "Map of file path to source code. Must include 'App.tsx'.",
-          additionalProperties: { type: "string" },
+          type: "array",
+          description: "List of source files. MUST include an entry with path='App.tsx' that default-exports a React component.",
+          minItems: 1,
+          items: {
+            type: "object",
+            properties: {
+              path: { type: "string", description: "Relative file path, e.g. 'App.tsx' or 'components/Button.tsx'." },
+              content: { type: "string", description: "Full source code for the file." },
+            },
+            required: ["path", "content"],
+          },
         },
       },
       required: ["summary", "files"],
-      additionalProperties: false,
     },
   },
 };
+
 
 export const generateProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
