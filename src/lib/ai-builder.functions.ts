@@ -187,12 +187,17 @@ export const generateProject = createServerFn({ method: "POST" })
       try {
         const parsed = JSON.parse(call?.function?.arguments ?? "{}");
         summary = String(parsed.summary || summary);
-        const raw = (parsed.files || {}) as Record<string, unknown>;
-        for (const [k, v] of Object.entries(raw)) {
-          if (typeof v !== "string") continue;
-          let path = k.replace(/^\.\//, "").replace(/^\/+/, "");
+        const rawList = Array.isArray(parsed.files)
+          ? parsed.files
+          : Object.entries(parsed.files ?? {}).map(([path, content]) => ({ path, content }));
+        for (const entry of rawList) {
+          if (!entry || typeof entry !== "object") continue;
+          const p = (entry as any).path;
+          const c = (entry as any).content;
+          if (typeof p !== "string" || typeof c !== "string") continue;
+          let path = p.replace(/^\.\//, "").replace(/^\/+/, "");
           if (path.startsWith("src/")) path = path.slice(4);
-          files[path] = v;
+          files[path] = c;
         }
       } catch (e) {
         console.error("Failed to parse tool args", e, "finish:", finish);
@@ -205,6 +210,7 @@ export const generateProject = createServerFn({ method: "POST" })
           delete files[alias];
         }
       }
+
       return { summary, files, finish, call };
     };
 
